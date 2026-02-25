@@ -5,6 +5,7 @@ import {
   Shield, ChevronRight, Zap,
 } from 'lucide-react'
 import { MOCK_ANALYSIS } from '../data/mockData'
+import { Chatbot } from './Chatbot'
 
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', desc: 'Overview & scores' },
@@ -106,6 +107,9 @@ export function Layout() {
       <main className="flex-1 overflow-y-auto">
         <Outlet />
       </main>
+
+      {/* Floating Chatbot */}
+      <Chatbot />
     </div>
   )
 }
