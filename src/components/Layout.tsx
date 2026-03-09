@@ -4,7 +4,7 @@ import {
   LayoutDashboard, FileText, List, Scale, Link2, History,
   Shield, ChevronRight, Zap,
 } from 'lucide-react'
-import { MOCK_ANALYSIS } from '../data/mockData'
+import { useAnalysis } from '../lib/AnalysisContext'
 import { Chatbot } from './Chatbot'
 
 const navItems = [
@@ -23,8 +23,10 @@ const riskColor = (score: number) => {
 }
 
 export function Layout() {
-  const data = MOCK_ANALYSIS
+  const { currentAnalysis: data } = useAnalysis()
   const location = useLocation()
+
+  if (!data) return <div className="p-6">Loading layouts...</div>
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -60,7 +62,7 @@ export function Layout() {
             <div className={cn(
               'text-[10px] font-medium px-2 py-0.5 rounded-full',
               data.overallRiskScore >= 70 ? 'bg-red-500/15 text-red-400' :
-              data.overallRiskScore >= 40 ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/15 text-emerald-400',
+                data.overallRiskScore >= 40 ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/15 text-emerald-400',
             )}>
               {data.overallRiskScore >= 70 ? 'HIGH' : data.overallRiskScore >= 40 ? 'MEDIUM' : 'LOW'}
             </div>

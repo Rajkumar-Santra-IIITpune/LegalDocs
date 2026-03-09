@@ -5,16 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Badge } from '../components/ui/misc'
 import { Progress } from '../components/ui/Progress'
 import { RiskBadge } from '../components/ui/RiskBadge'
-import { MOCK_ANALYSIS } from '../data/mockData'
 import { Regulation } from '../types'
 import { cn } from '../lib/utils'
-
-const data = MOCK_ANALYSIS
-
-// Collect all regulations from all clauses
-const allRegulations = data.clauses.flatMap(clause =>
-  clause.regulations.map(r => ({ ...r, clauseId: clause.id, clauseTitle: clause.title, clauseRisk: clause.riskLevel }))
-)
+import { useAnalysis } from '../lib/AnalysisContext'
 
 const BODY_COLORS: Record<string, string> = {
   BNS: 'bg-orange-500/15 text-orange-400 border-orange-500/30',
@@ -32,7 +25,7 @@ const BODY_DESCRIPTIONS: Record<string, string> = {
   'IT Act': 'Information Technology Act, 2000',
 }
 
-function RegulationCard({ reg }: { reg: typeof allRegulations[0] }) {
+function RegulationCard({ reg }: { reg: any }) {
   return (
     <motion.div layout>
       <Card className="hover:border-border/70 transition-colors">
@@ -88,6 +81,13 @@ const BODIES = ['All', 'BNS', 'SEBI', 'RBI', 'Companies Act', 'IT Act'] as const
 
 export function RegulationsPage() {
   const [bodyFilter, setBodyFilter] = useState<string>('All')
+  const { currentAnalysis: data } = useAnalysis()
+
+  if (!data) return <div className="p-6">Loading regulations...</div>
+
+  const allRegulations = data.clauses.flatMap(clause =>
+    clause.regulations.map(r => ({ ...r, clauseId: clause.id, clauseTitle: clause.title, clauseRisk: clause.riskLevel }))
+  )
 
   const filtered = bodyFilter === 'All'
     ? allRegulations

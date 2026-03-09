@@ -1,11 +1,9 @@
 import { motion } from 'framer-motion'
 import { AlertTriangle, AlertCircle, Info, Link2, ArrowLeftRight, ChevronRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card'
-import { MOCK_ANALYSIS } from '../data/mockData'
+import { ConflictPair, Clause } from '../types'
 import { cn } from '../lib/utils'
-import { ConflictPair } from '../types'
-
-const data = MOCK_ANALYSIS
+import { useAnalysis } from '../lib/AnalysisContext'
 
 const SEVERITY_CONFIG = {
   critical: {
@@ -34,12 +32,12 @@ const SEVERITY_CONFIG = {
   },
 }
 
-function ConflictCard({ conflict, index }: { conflict: ConflictPair; index: number }) {
+function ConflictCard({ conflict, index, clauses }: { conflict: ConflictPair; index: number; clauses: Clause[] }) {
   const sev = SEVERITY_CONFIG[conflict.severity]
   const Icon = sev.icon
 
-  const clauseA = data.clauses.find(c => c.id === conflict.clauseAId)
-  const clauseB = data.clauses.find(c => c.id === conflict.clauseBId)
+  const clauseA = clauses.find(c => c.id === conflict.clauseAId)
+  const clauseB = clauses.find(c => c.id === conflict.clauseBId)
 
   return (
     <motion.div
@@ -115,6 +113,10 @@ function ConflictCard({ conflict, index }: { conflict: ConflictPair; index: numb
 }
 
 export function ConflictsPage() {
+  const { currentAnalysis: data } = useAnalysis()
+
+  if (!data) return <div className="p-6">Loading conflicts...</div>
+
   const hasCritical = data.conflicts.some(c => c.severity === 'critical')
 
   return (
@@ -182,8 +184,8 @@ export function ConflictsPage() {
                       className={cn(
                         'rounded-lg border p-2.5 text-center transition-all relative',
                         hasConflict && conflictSeverity === 'critical' ? 'border-red-500/50 bg-red-500/8' :
-                        hasConflict && conflictSeverity === 'warning' ? 'border-amber-500/50 bg-amber-500/8' :
-                        'border-border bg-secondary/30',
+                          hasConflict && conflictSeverity === 'warning' ? 'border-amber-500/50 bg-amber-500/8' :
+                            'border-border bg-secondary/30',
                       )}
                     >
                       {hasConflict && (
@@ -222,7 +224,7 @@ export function ConflictsPage() {
           </div>
         ) : (
           data.conflicts.map((conflict, i) => (
-            <ConflictCard key={`${conflict.clauseAId}-${conflict.clauseBId}`} conflict={conflict} index={i} />
+            <ConflictCard key={`${conflict.clauseAId}-${conflict.clauseBId}`} conflict={conflict} index={i} clauses={data.clauses} />
           ))
         )}
       </div>

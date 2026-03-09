@@ -9,12 +9,11 @@ import { AlertTriangle, CheckCircle2, AlertCircle, Shield, FileText, Clock, Zap,
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { RiskBadge } from '../components/ui/RiskBadge'
-import { MOCK_ANALYSIS, RISK_SCORE_HISTORY, CLAUSE_CATEGORY_DIST } from '../data/mockData'
+import { RISK_SCORE_HISTORY } from '../data/mockData'
 import { cn, formatDate, getRiskBarColor } from '../lib/utils'
 import { Progress } from '../components/ui/Progress'
 import { Badge } from '../components/ui/misc'
-
-const data = MOCK_ANALYSIS
+import { useAnalysis } from '../lib/AnalysisContext'
 
 const PIE_COLORS = {
   high: '#ef4444',
@@ -63,16 +62,26 @@ const StatItem = ({ icon: Icon, label, value, sub, color }: { icon: any; label: 
   </div>
 )
 
-const pieData = [
-  { name: 'High Risk', value: data.riskBreakdown.high, fill: PIE_COLORS.high },
-  { name: 'Caution', value: data.riskBreakdown.medium, fill: PIE_COLORS.medium },
-  { name: 'Low Risk', value: data.riskBreakdown.low, fill: PIE_COLORS.low },
-  { name: 'Safe', value: data.riskBreakdown.safe, fill: PIE_COLORS.safe },
-]
-
 export function DashboardPage() {
   const navigate = useNavigate()
+  const { currentAnalysis: data } = useAnalysis()
+
+  if (!data) return <div className="p-6">Loading analysis...</div>
+
   const topClauses = [...data.clauses].sort((a, b) => b.riskScore - a.riskScore).slice(0, 5)
+
+  const pieData = [
+    { name: 'High Risk', value: data.riskBreakdown.high, fill: PIE_COLORS.high },
+    { name: 'Caution', value: data.riskBreakdown.medium, fill: PIE_COLORS.medium },
+    { name: 'Low Risk', value: data.riskBreakdown.low, fill: PIE_COLORS.low },
+    { name: 'Safe', value: data.riskBreakdown.safe, fill: PIE_COLORS.safe },
+  ]
+
+  const categoryCount: Record<string, number> = {}
+  data.clauses.forEach(c => {
+    categoryCount[c.category] = (categoryCount[c.category] || 0) + 1
+  })
+  const dynamicCategoryDist = Object.entries(categoryCount).map(([k, v]) => ({ category: k, count: v }))
 
   return (
     <div className="p-6 space-y-6 max-w-[1400px] mx-auto">
@@ -206,7 +215,7 @@ export function DashboardPage() {
             <CardContent>
               <div className="h-44">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={CLAUSE_CATEGORY_DIST} layout="vertical" barSize={9}>
+                  <BarChart data={dynamicCategoryDist} layout="vertical" barSize={9}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
                     <XAxis type="number" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} />
                     <YAxis type="category" dataKey="category" tick={{ fontSize: 10, fill: '#6b7280' }} axisLine={false} tickLine={false} width={96} />

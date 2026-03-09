@@ -5,16 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { RiskBadge } from '../components/ui/RiskBadge'
 import { Progress } from '../components/ui/Progress'
-import { MOCK_ANALYSIS } from '../data/mockData'
 import { Clause } from '../types'
 import { cn, getRiskHeatColor, getRiskBarColor, getRiskColor } from '../lib/utils'
+import { useAnalysis } from '../lib/AnalysisContext'
 
-const data = MOCK_ANALYSIS
-
-function RiskScrollbar() {
+function RiskScrollbar({ clauses }: { clauses: Clause[] }) {
   return (
     <div className="w-5 flex flex-col rounded-full overflow-hidden border border-border" style={{ minHeight: '100%' }}>
-      {data.clauses.map(clause => (
+      {clauses.map(clause => (
         <div
           key={clause.id}
           title={`${clause.title}: ${clause.riskScore}`}
@@ -45,8 +43,8 @@ function ShapInline({ tokens }: { tokens: Clause['shapTokens'] }) {
                 background: isRisky
                   ? `rgba(239,68,68,${intensity * 0.35})`
                   : isSafe
-                  ? `rgba(34,197,94,${intensity * 0.25})`
-                  : 'transparent',
+                    ? `rgba(34,197,94,${intensity * 0.25})`
+                    : 'transparent',
               }}
               title={`SHAP: ${t.score.toFixed(2)}`}
             >
@@ -63,6 +61,9 @@ function ShapInline({ tokens }: { tokens: Clause['shapTokens'] }) {
 export function DocumentViewerPage() {
   const [selected, setSelected] = useState<Clause | null>(null)
   const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low' | 'safe'>('all')
+  const { currentAnalysis: data } = useAnalysis()
+
+  if (!data) return <div className="p-6">Loading document...</div>
 
   const filtered = filter === 'all' ? data.clauses : data.clauses.filter(c => c.riskLevel === filter)
 
@@ -160,7 +161,7 @@ export function DocumentViewerPage() {
 
           {/* Vertical risk scrollbar */}
           <div className="w-7 flex-shrink-0 py-6 pr-3 flex flex-col">
-            <RiskScrollbar />
+            <RiskScrollbar clauses={data.clauses} />
           </div>
         </div>
       </div>

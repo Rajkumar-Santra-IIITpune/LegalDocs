@@ -11,12 +11,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Button } from '../components/ui/Button'
 import { RiskBadge } from '../components/ui/RiskBadge'
 import { Progress } from '../components/ui/Progress'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs'
-import { MOCK_ANALYSIS } from '../data/mockData'
 import { Clause } from '../types'
-import { cn, getRiskColor, getRiskBarColor, getRiskBg } from '../lib/utils'
-
-const data = MOCK_ANALYSIS
+import { cn, getRiskColor, getRiskBarColor } from '../lib/utils'
+import { useAnalysis } from '../lib/AnalysisContext'
 
 function ShapForcePlot({ tokens }: { tokens: Clause['shapTokens'] }) {
   const sorted = [...tokens].sort((a, b) => Math.abs(b.score) - Math.abs(a.score)).slice(0, 8)
@@ -224,6 +221,9 @@ function ClauseCard({ clause }: { clause: Clause }) {
 export function ClauseAnalysisPage() {
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState<'risk' | 'index'>('risk')
+  const { currentAnalysis: data } = useAnalysis()
+
+  if (!data) return <div className="p-6">Loading clauses...</div>
 
   const clauses = [...data.clauses]
     .filter(c => c.title.toLowerCase().includes(search.toLowerCase()) || c.category.toLowerCase().includes(search.toLowerCase()))

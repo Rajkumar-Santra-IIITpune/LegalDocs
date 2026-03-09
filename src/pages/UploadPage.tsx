@@ -7,6 +7,7 @@ import { cn } from '../lib/utils'
 import { Button } from '../components/ui/Button'
 import { SUPPORTED_LANGUAGES } from '../data/mockData'
 import { Language } from '../types'
+import { useAnalysis } from '../lib/AnalysisContext'
 
 const FEATURES = [
   {
@@ -83,7 +84,7 @@ export function UploadPage() {
   const [file, setFile] = useState<File | null>(null)
   const [lang, setLang] = useState<Language>(SUPPORTED_LANGUAGES[0])
   const [showLangPicker, setShowLangPicker] = useState(false)
-  const [analyzing, setAnalyzing] = useState(false)
+  const { analyzeDocument, isAnalyzing: analyzing } = useAnalysis()
   const [step, setStep] = useState<'upload' | 'language' | 'ready'>('upload')
 
   const onDrop = useCallback((accepted: File[]) => {
@@ -102,9 +103,9 @@ export function UploadPage() {
     maxFiles: 1,
   })
 
-  const handleAnalyze = async () => {
-    setAnalyzing(true)
-    await new Promise(r => setTimeout(r, 2800))
+  const handleAnalyze = async (customFile?: File | null) => {
+    const fileToAnalyze = customFile !== undefined ? customFile : file
+    await analyzeDocument(fileToAnalyze, lang)
     navigate('/dashboard')
   }
 
@@ -170,8 +171,8 @@ export function UploadPage() {
               isDragActive
                 ? 'border-primary bg-primary/10 scale-[1.01]'
                 : file
-                ? 'border-emerald-500/50 bg-emerald-500/5'
-                : 'border-border hover:border-primary/50 hover:bg-primary/5',
+                  ? 'border-emerald-500/50 bg-emerald-500/5'
+                  : 'border-border hover:border-primary/50 hover:bg-primary/5',
             )}
           >
             <input {...getInputProps()} />
@@ -305,7 +306,7 @@ export function UploadPage() {
               >
                 <Button
                   className="w-full h-12 text-base font-semibold glow-primary"
-                  onClick={handleAnalyze}
+                  onClick={() => handleAnalyze()}
                   loading={analyzing}
                 >
                   {analyzing ? (
@@ -371,7 +372,7 @@ export function UploadPage() {
                 {doc.demo ? (
                   /* Demo docs — navigate directly to dashboard */
                   <button
-                    onClick={handleAnalyze}
+                    onClick={() => handleAnalyze(null)}
                     disabled={analyzing}
                     className="w-full flex items-center gap-3 p-3 rounded-xl border border-border bg-card/40 hover:bg-card/80 hover:border-border/80 transition-all text-left group"
                   >
